@@ -14,8 +14,7 @@ The game is primarily developed using :
 
 For the computer part a simple *AI algorithm* is implemented.
 
-
-
+***
 
 Scope of Improvement : 
 + Implement a timer for the duration of the game so that player with greater score at the end of timer wins the game.
