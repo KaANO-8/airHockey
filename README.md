@@ -2,7 +2,7 @@
 
 ###A simple air hockey game developed in JavaScript.
 
-This is a two-player game in which one player will be the user and the other will be the computer. Both the players tries to score in the opponents goal and player with a greater score wins the game.
+This is a two-player game in which one player will be the user and the other will be the computer. Both the players tries to score in the opponent's goal and player with a greater score wins the game.
 
 
 The game is primarily developed using : 
@@ -10,7 +10,11 @@ The game is primarily developed using :
 + Mouse handling events in JavaScript 
 
 
+
+
 For the computer part a simple *AI algorithm* is implemented.
+
+
 
 
 Scope of Improvement : 
