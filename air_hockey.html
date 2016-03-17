@@ -1,0 +1,318 @@
+<html>
+<head>
+<title>Air Hockey</title>
+<style>
+  * { padding: 0; margin: 0; }
+    canvas { background: #eee; display: block; margin: 0px auto; margin-top: 20px;}
+
+    
+</style>
+<body>
+	<canvas id="canvas" width="520" height="660"></canvas>
+	<script>
+    var canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+    var gm = true;
+    var ball_speed = 10;
+    var xspeed = 0;
+    var yspeed = 0;
+    var com_score = 0;
+    var player_score = 0;
+    var x_min=30;
+    var x_max=460;
+    var y_min=30;
+    var y_max=600;
+
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+
+
+    function draw_rect(x,y,w,h,b)
+    {
+        ctx.beginPath();
+        if(b)
+        {
+            ctx.strokeStyle = "#151B54";
+            ctx.lineWidth = 40;
+        }
+        else
+        {
+            ctx.strokeStyle = "#1589FF";
+            ctx.lineWidth = 4;
+        }    
+        ctx.strokeRect(x,y,w,h);
+        ctx.closePath();
+    }  
+      
+    function draw_goal(x,y,r,s)
+    {
+        ctx.beginPath();
+        ctx.lineWidth=4;
+        if(s)
+          ctx.arc(x, y, r, 0, Math.PI, false);
+        else
+          ctx.arc(x, y, r, Math.PI, 0, false);
+
+        ctx.strokeStyle = "#1589FF";
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    function draw_circle(x,y,r,w)
+    {
+        ctx.beginPath();
+        ctx.lineWidth=w;
+        ctx.arc(x, y, r, 0, Math.PI*2, false);
+        ctx.strokeStyle = "#1589FF";
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    function draw_filled_circle(x,y,r,d)
+    {
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI*2);
+        if(d==1)
+        {
+         ctx.fillStyle = "#F87217";
+         ctx.strokeStyle = "#9F000F";
+        }
+        else if(d==2)
+        {
+         ctx.fillStyle = "#ffdc00";
+         ctx.strokeStyle = "#9F000F";
+        }
+        else
+        {
+         ctx.fillStyle = "#7D0552";
+         ctx.strokeStyle = "#4CC417";   
+        }    
+        
+        ctx.fill();
+        ctx.lineWidth = 3;
+        
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    function draw_board()
+    {
+        draw_rect(0,0,520,660,1);
+        draw_rect(30,30,460,600,0);
+        draw_goal(260,30,70,1);
+        draw_goal(260,30,150,1);
+        draw_goal(260,630,70,0);
+        draw_goal(260,630,150,0);
+        draw_circle(260,330,40,4);
+        draw_circle(260,330,5,4);
+        
+        ctx.beginPath();
+        ctx.moveTo(30, 330);
+        ctx.lineTo(490, 330);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.moveTo(190, 30);
+        ctx.lineTo(330, 30);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#000";
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.moveTo(190, 630);
+        ctx.lineTo(330, 630);
+        //ctx.strokeStyle("#FFFFFF");
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.font = "50px Pristina";
+        ctx.lineWidth = 2
+        ctx.strokeText(com_score,440,300);
+        ctx.strokeText(player_score,440,380);
+    }
+
+    function distance(x1,y1,x2,y2)
+    {
+        var tempx = x2-x1;
+        var tempy = y2-y1;
+        tempx*=tempx;
+        tempy*=tempy;
+        return Math.sqrt(tempx+tempy);
+    }
+
+
+    var Mallet = function(x,y,r)
+    {
+
+        this.x = x;
+        this.y = y;
+        this.radius = r;
+    }
+    // Player's object
+    var pMallet = new Mallet(260,canvas.height-100,30);
+    
+    var cMallet = new Mallet(260,100,30);
+
+    // Ball class
+    var Ball = function (x,y,r) {
+        this.x = x;
+        this.y = y;
+        this.radius = r;
+    }
+    // ball object
+    var ball = new Ball(canvas.width/2,canvas.height-200,15); 
+
+
+    // function to control the mallet according to cursor
+    function mouseMoveHandler(e) {
+    var relativeX = e.clientX - canvas.offsetLeft;
+    var relativeY = e.clientY -canvas.offsetTop;
+
+       if(relativeX > 60 && relativeX < canvas.width-60) {
+            pMallet.x = relativeX;
+        }
+        //360
+       if(relativeY > 0 && relativeY < 600){
+            pMallet.y = relativeY;
+        }    
+    }
+
+   
+        function play()
+        {
+
+           ctx.clearRect(0, 0, canvas.width, canvas.height);
+           // draw draw the board
+           draw_board();
+           // drawing player's mallet
+           draw_filled_circle(pMallet.x,pMallet.y,pMallet.radius,1);   
+           // drawing computer's mallet
+           draw_filled_circle(cMallet.x,cMallet.y,cMallet.radius,2);   
+           // drawing the ball
+           draw_filled_circle(ball.x,ball.y,ball.radius,0);
+
+           // condition to counce the ball off the left-right walls
+           if(ball.x + xspeed > canvas.width-ball.radius-30 || ball.x + xspeed < ball.radius + 30) {
+                 xspeed *= -1;
+            }
+           
+           // condition to bounce the ball off the top-botom walls and goal logic
+           if(ball.x>190 && ball.x<330){
+            if(ball.y + yspeed > canvas.height+ball.radius-30){
+                console.log("Computer Score");
+                ball.x = canvas.width/2;
+                ball.y = canvas.height/2+100;
+                xspeed = 0;
+                yspeed = 0 ;
+                com_score = com_score + 1;
+            }
+            else if(ball.y + yspeed < 30-ball.radius ){
+                console.log("you Score");
+                ball.x = canvas.width/2;
+                ball.y = canvas.height/2-100;
+                xspeed = 0;
+                yspeed = 0;
+                player_score = player_score + 1; 
+            }
+           }
+           else{
+            if(ball.y + yspeed > canvas.height-ball.radius-30  || ball.y + yspeed  < 30+ball.radius){
+                yspeed *= -1;
+            }
+           }
+          
+        
+        var ed = false; // enemy difficulty
+        var er = 1;//Used in AI. This is so CPU doesn't just hit it down all the time.
+        var p2s;//The speed CPU moves side to side
+        if(ed){er=5;}//If hard, Make er larger so CPU hits it diagonally.
+
+   
+
+          if((Math.abs(xspeed)+Math.abs(yspeed))<10&&ball.y<=canvas.height/2){
+              if(ball.y-20>cMallet.y){
+                  cMallet.y+=2;
+              }
+              else{
+                  cMallet.y-=2;
+              }
+          }
+          else if(cMallet.y>100){
+                  cMallet.y-=2;
+          }
+          else if(cMallet.y<100){
+                  cMallet.y+=2;
+          }
+
+
+    //Make sure You or CPU doesn't go past the line or go off screen.
+   if(cMallet.x<x_min)
+      {cMallet.x=x_min+30;}
+    if(cMallet.x>x_max)
+      {cMallet.x=x_max+30;}
+    if(cMallet.y<y_min)
+      {cMallet.y=y_min+60;}
+    if(cMallet.y>y_max)
+      {cMallet.y=y_max;}
+    
+    //set CPU's speed depending on difficulty
+    if(!ed){p2s = 2;}
+    else{p2s=3;}
+    
+    //If the ball is behind CPU, it moves out of the way.
+    if(ball.y<cMallet.y&&ball.x>cMallet.x-30&&ball.x<cMallet.x+30){p2s = -2;}
+    //Make CPU move towards the ball's x coord
+    if(cMallet.x<ball.x+er){cMallet.x+=p2s;}if(cMallet.x>ball.x-er){cMallet.x-=p2s;}
+    
+           
+
+
+          var pDist = distance(pMallet.x,pMallet.y,ball.x,ball.y);
+          
+          var cDist = distance(cMallet.x,cMallet.y,ball.x,ball.y);          
+          
+
+          // Function to hit the ball for player
+          if(pDist<45)
+          {
+           /* console.log("Mallet x : "+pMallet.x+" y : "+pMallet.y);
+            console.log("Ball x : "+ball.x+" y : "+ball.y);
+            console.log("Distance is : "+dist);
+            console.log("dist<30"); */
+            var dx = ball.x - pMallet.x;
+            var dy = ball.y - pMallet.y;
+            //console.log("dx  : " + dx);
+            //console.log("dy  : " + dy);
+            dx/=30;
+            dy/=30;
+            xspeed = dx*ball_speed;
+            yspeed = dy*ball_speed;
+          }  
+
+          // Function to hit the ball when computer is playing
+          if(cDist<45)
+          {
+            var cdx = ball.x - cMallet.x;
+            var cdy = ball.y- cMallet.y;
+            cdx/=45;
+            cdy/=45;
+            xspeed = cdx*ball_speed;
+            yspeed = cdy*ball_speed;
+          }
+
+         // Adjustments in the x and y coordianate of  the ball
+           ball.x += xspeed;
+           ball.y += yspeed;
+
+           xspeed *=0.99;
+           yspeed *=0.99;
+        }
+         
+        setInterval(play,10);   
+
+    
+	</script>
+</body>
+</head>
+</html>
